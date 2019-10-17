@@ -1,0 +1,6 @@
+(library
+ (name homotopy_core)
+ (public_name homotopy_core)
+ (libraries base)
+ (preprocess
+  (pps ppx_jane)))

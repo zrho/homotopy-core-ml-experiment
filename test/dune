@@ -1,0 +1,6 @@
+(library
+ (name homotopy_test)
+ (libraries homotopy_core base stdio)
+ (inline_tests)
+ (preprocess
+  (pps ppx_jane)))
