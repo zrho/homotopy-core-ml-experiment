@@ -2,9 +2,25 @@ open Base
 
 type t
 
+(** {2 Construction} *)
+
+val make : (int * int) List.t -> t
 val identity : t
-val of_array : int Array.t -> t
-val to_array : t -> int Array.t
-val forward : t -> int -> int
-val backward : t -> int -> int Sequence.t
+
+(** {2 Primal} *)
+
+val image : t -> int -> int
+val preimage : t -> int -> int List.t
+
+(** {2 Dual} *)
+
+val dual_image : t -> int -> int
+val dual_preimage : t -> int -> int List.t
+
+(** {2 Colimits} *)
+
+val colimit : (int * t) * (int * t) list -> t list
+
+(** {2 Miscellaneous} *)
+
 val sexp_of_t : t -> Sexp.t

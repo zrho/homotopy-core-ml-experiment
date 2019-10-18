@@ -19,12 +19,6 @@ let print_edges diagram =
   |> Sexp.to_string |> print_endline
 
 let%expect_test _ =
-  let module Monotone = Homotopy_core.Monotone in
-  let m = Monotone.of_array [|0; 0|] in
-  Monotone.forward m 2 |> [%sexp_of: int] |> Sexp.to_string |> print_endline;
-  [%expect]
-
-let%expect_test _ =
   let a = Diagram.make 1 in
   let f = Diagram.make ~boundary:(a, a) 2 in
   let ff = Diagram.attach f f in

@@ -193,35 +193,15 @@ let rec points = function
       Sequence.map (points slice) ~f:(fun (rest, generator) -> 
         (height_of_int index :: rest, generator)))
 
-let monotone_singular = function
+let monotone_of_limit = function
   | Limit0 _ -> Monotone.identity
   | LimitN cones ->
-    let module C = Util.Counter in
-    let counter = C.make 0 in
-    let last = ref 0 in
-    let monotone = Array.concat_map (Array.of_list cones) ~f:(fun cone ->
-      let before = Array.init (cone.offset - !last) ~f:(fun _ -> C.next counter) in
-      let index = C.next counter in
-      let after = Array.init (List.length cone.source) ~f:(fun _ -> index) in
-      last := cone.offset + List.length cone.source;
-      Array.append before after
-    ) in
-    Stdio.prerr_endline (Sexp.to_string ([%sexp_of: int Array.t] monotone));
-    Monotone.of_array monotone
-
-let monotone_regular = function
-  | Limit0 _ -> Monotone.identity
-  | LimitN cones ->
-    let module C = Util.Counter in
-    let counter = C.make 0 in
-    let last = ref 0 in
-    let monotone = Array.concat_map (Array.of_list cones) ~f:(fun cone ->
-      let before = Array.init (cone.offset - !last + 1) ~f:(fun _ -> C.next counter) in
-      C.skip counter (List.length cone.source);
-      last := cone.offset + List.length cone.source;
-      before) in
-    let monotone = Array.append monotone [|!last|] in
-    Monotone.of_array monotone
+      let offset = ref 0 in
+      Monotone.make (List.map cones ~f:(fun cone ->
+        let old_offset = !offset in
+        offset := old_offset + List.length cone.source + cone.offset;
+        (cone.offset - old_offset, List.length cone.source)
+      ))
 
 let cone_slice height cone = List.nth cone.slices (height - cone.offset)
 
@@ -233,17 +213,12 @@ let limit_slice limit singular_height =
 let rec limit_action limit = function
   | [] -> Sequence.singleton []
   | Regular height :: rest ->
-    Monotone.backward (monotone_regular limit) height
+    Monotone.dual_preimage (monotone_of_limit limit) height
+    |> Sequence.of_list
     |> Sequence.map ~f:(fun height -> Regular height :: rest)
   | Singular height :: rest ->
-    if true then (
-      monotone_singular limit
-      |> Monotone.sexp_of_t
-      |> Sexp.to_string
-      |> Stdio.prerr_endline
-    );
     let rest = limit_action_option (limit_slice limit height) rest in
-    let height = Monotone.forward (monotone_singular limit) height in
+    let height = Monotone.image (monotone_of_limit limit) height in
     Sequence.map ~f:(fun rest -> Singular height :: rest) rest
 and limit_action_option limit point = match limit with
   | None -> Sequence.singleton point
