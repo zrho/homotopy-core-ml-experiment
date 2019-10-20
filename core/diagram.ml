@@ -196,11 +196,8 @@ let rec points = function
 let monotone_of_limit = function
   | Limit0 _ -> Monotone.identity
   | LimitN cones ->
-      let offset = ref 0 in
       Monotone.make (List.map cones ~f:(fun cone ->
-        let old_offset = !offset in
-        offset := old_offset + List.length cone.source + cone.offset;
-        (cone.offset - old_offset, List.length cone.source)
+        (cone.offset, List.length cone.source)
       ))
 
 let cone_slice height cone = List.nth cone.slices (height - cone.offset)

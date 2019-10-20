@@ -12,19 +12,19 @@ let identity = []
 let make = List.map ~f:(fun (offset, size) -> { offset; size })
 
 let image monotone index =
-  let rec loop index offset = function
+  let rec loop offset = function
     | [] -> index + offset
     | p::_ when index < p.offset -> index + offset
     | p::_ when index < p.offset + p.size -> p.offset + offset
-    | p::ps -> loop (index - p.offset - p.size) (offset + 1 + p.offset) ps
-  in loop index 0 monotone
+    | p::ps -> loop (offset + 1 - p.size) ps
+  in loop 0 monotone
 
 let dual_image monotone index =
-  let rec loop index offset = function
-    | [] -> index + offset
-    | p::_ when index <= p.offset -> index + offset
-    | p::ps -> loop (index - 1 - p.offset) (offset + p.offset + p.size) ps
-  in loop index 0 monotone
+  let rec loop index = function
+    | [] -> index 
+    | p::_ when index <= p.offset -> index 
+    | p::ps -> loop (index - 1 + p.size) ps
+  in loop index monotone
 
 let naive_preimage ~f value = 
   Sequence.unfold ~init:0 ~f:(fun i -> Some ((i, f i), i + 1))

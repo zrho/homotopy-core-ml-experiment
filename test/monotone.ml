@@ -3,7 +3,7 @@ open Stdio
 module Monotone = Homotopy_core.Monotone
 
 let%expect_test _ =
-  let monotone = Monotone.make [1, 2; 0, 0] in
+  let monotone = Monotone.make [1, 2; 3, 0] in
 
   List.init 5 ~f:(Monotone.image monotone)
   |> [%sexp_of: int list]
